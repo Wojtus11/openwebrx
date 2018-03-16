@@ -44,6 +44,7 @@ import traceback
 from collections import namedtuple
 import Queue
 import ctypes
+import argparse
 
 #import rtl_mus
 import rxws
@@ -61,6 +62,14 @@ except: pass
 try: import __pypy__
 except: pass
 pypy="__pypy__" in globals()
+
+argparser = argparse.ArgumentParser(description='OpenWebRX with basic command line configuration')
+argparser.add_argument('-cfg', metavar='<config>', help='config file (def: config_webrx)')
+argparser.add_argument('-d', metavar='<dev#>', type=int, help='RTL device index (def: 0)', default=0)
+argparser.add_argument('-ppm', metavar='<dev#>', type=int, help='PPM correction (def: 0)', default=0)
+argparser.add_argument('-f', metavar='<freq>', type=int, help='Center frequency (in kHz) (def: 145000)', default=145000)
+
+command_line_args = argparser.parse_args()
 
 """
 def import_all_plugins(directory):
@@ -108,6 +117,7 @@ def access_log(data):
 receiver_failed=spectrum_thread_watchdog_last_tick=rtl_thread=spectrum_dsp=server_fail=None
 
 def main():
+    global command_line_args
     global clients, clients_mutex, pypy, lock_try_time, avatar_ctime, cfg, logs
     global serverfail, rtl_thread
     print
@@ -117,9 +127,12 @@ def main():
     print "Author contact info:    Andras Retzler, HA7ILM <randras@sdr.hu>"
     print
 
-    no_arguments=len(sys.argv)==1
-    if no_arguments: print "[openwebrx-main] Configuration script not specified. I will use: \"config_webrx.py\""
-    cfg=__import__("config_webrx" if no_arguments else sys.argv[1])
+    if not command_line_args.cfg:
+      print "[openwebrx-main] Configuration script not specified. I will use: \"config_webrx.py\""
+      cfg=__import__("config_webrx")
+    else:
+      cfg=__import__(command_line_args.cfg)
+
     for option in ("access_log","csdr_dynamic_bufsize","csdr_print_bufsizes","csdr_through"):
         if not option in dir(cfg): setattr(cfg, option, False) #initialize optional config parameters
 

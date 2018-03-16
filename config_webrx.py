@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import argparse
+
+argparser = argparse.ArgumentParser(description='OpenWebRX with basic command line configuration', add_help=False)
+argparser.add_argument('-cfg', metavar='<config>', help='config file (def: config_webrx)')
+argparser.add_argument('-d', metavar='<dev#>', type=int, help='RTL device index (def: 0)', default=0)
+argparser.add_argument('-ppm', metavar='<dev#>', type=int, help='PPM correction (def: 0)', default=0)
+argparser.add_argument('-f', metavar='<freq>', type=int, help='Center frequency (in kHz) (def: 145000)', default=145000)
+
+command_line_args = argparser.parse_args()
+
 """
 config_webrx: configuration options for OpenWebRX
 
@@ -73,9 +83,10 @@ fft_voverlap_factor=0.3 #If fft_voverlap_factor is above 0, multiple FFTs will b
 
 # samp_rate = 250000
 samp_rate = 2400000
-center_freq = 144250000
+center_freq = command_line_args.f * 1000
 rf_gain = 5 #in dB. For an RTL-SDR, rf_gain=0 will set the tuner to auto gain mode, else it will be in manual gain mode.
-ppm = 0
+ppm = command_line_args.ppm
+rtl_device_index = command_line_args.d
 
 audio_compression="adpcm" #valid values: "adpcm", "none"
 fft_compression="adpcm" #valid values: "adpcm", "none"
@@ -104,7 +115,7 @@ Note: if you experience audio underruns while CPU usage is 100%, you can:
 # You can use other SDR hardware as well, by giving your own command that outputs the I/Q samples... Some examples of configuration are available here (default is RTL-SDR):
 
 # >> RTL-SDR via rtl_sdr
-start_rtl_command="rtl_sdr -s {samp_rate} -f {center_freq} -p {ppm} -g {rf_gain} -".format(rf_gain=rf_gain, center_freq=center_freq, samp_rate=samp_rate, ppm=ppm)
+start_rtl_command="rtl_sdr -d {rtl_device_index} -s {samp_rate} -f {center_freq} -p {ppm} -g {rf_gain} -".format(rtl_device_index=rtl_device_index, rf_gain=rf_gain, center_freq=center_freq, samp_rate=samp_rate, ppm=ppm)
 format_conversion="csdr convert_u8_f"
 
 #lna_gain=8
